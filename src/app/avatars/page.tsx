@@ -22,7 +22,7 @@ function AvatarModel({
   position: [number, number, number]
   onClick: () => void
   modelIndex: number
-  avatarData: { name: string; [key: string]: any }
+  avatarData: { name: string; [key: string]: unknown }
 }) {
   const meshRef = useRef<THREE.Group>(null)
   const gltf = useGLTF(AVATAR_MODEL_URL)

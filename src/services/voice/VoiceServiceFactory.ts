@@ -46,7 +46,7 @@ export class VoiceServiceFactory {
     const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
 
     const config = {
-      provider: 'elevenlabs',
+      provider: 'elevenlabs' as const,
       voiceId: '4tRn1lSkEn13EVTuqb0g',
       apiKey: apiKey,
       model: 'eleven_multilingual_v2'

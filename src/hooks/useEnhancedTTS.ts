@@ -118,7 +118,7 @@ export function useEnhancedTTS(avatarName?: string): EnhancedTTSHookReturn {
 
     if (!voiceProviderRef.current) {
       const config = {
-        provider: 'elevenlabs',
+        provider: 'elevenlabs' as const,
         voiceId: '4tRn1lSkEn13EVTuqb0g',
         apiKey: process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY,
         model: 'eleven_multilingual_v2'

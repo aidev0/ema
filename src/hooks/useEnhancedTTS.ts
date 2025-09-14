@@ -17,7 +17,7 @@ interface EnhancedTTSHookReturn {
   setStreamingTextCallback: (callback: (text: string) => void) => void
 }
 
-export function useEnhancedTTS(avatarName?: string): EnhancedTTSHookReturn {
+export function useEnhancedTTS(avatarName?: string, voiceId?: string): EnhancedTTSHookReturn {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioAnalyser, setAudioAnalyser] = useState<AnalyserNode | null>(null)
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
@@ -35,10 +35,10 @@ export function useEnhancedTTS(avatarName?: string): EnhancedTTSHookReturn {
   useEffect(() => {
     const initializeProvider = async () => {
       try {
-        // Use ElevenLabs with your voice configuration
+        // Use ElevenLabs with voice configuration from avatar
         const config = {
           provider: 'elevenlabs' as const,
-          voiceId: '4tRn1lSkEn13EVTuqb0g',
+          voiceId: voiceId || '4tRn1lSkEn13EVTuqb0g',
           apiKey: process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY,
           model: 'eleven_multilingual_v2'
         }
@@ -68,7 +68,7 @@ export function useEnhancedTTS(avatarName?: string): EnhancedTTSHookReturn {
     }
 
     initializeProvider()
-  }, [avatarName])
+  }, [avatarName, voiceId])
 
   // Load Web Speech voices (for fallback and display)
   useEffect(() => {
@@ -119,7 +119,7 @@ export function useEnhancedTTS(avatarName?: string): EnhancedTTSHookReturn {
     if (!voiceProviderRef.current) {
       const config = {
         provider: 'elevenlabs' as const,
-        voiceId: '4tRn1lSkEn13EVTuqb0g',
+        voiceId: voiceId || '4tRn1lSkEn13EVTuqb0g',
         apiKey: process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY,
         model: 'eleven_multilingual_v2'
       }

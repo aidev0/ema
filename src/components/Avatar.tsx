@@ -351,7 +351,7 @@ interface AvatarProps {
   avatarUrl?: string
 }
 
-export default function Avatar({ isPlaying, audioAnalyser, currentText }: AvatarProps) {
+export default function Avatar({ isPlaying, audioAnalyser, currentText, avatarUrl }: AvatarProps) {
   // Temporarily disable typewriter to test lip sync
   // const typewriterText = useTypewriter(currentText || '', 75)
 
@@ -386,7 +386,7 @@ export default function Avatar({ isPlaying, audioAnalyser, currentText }: Avatar
 
           {/* Avatar Model */}
           <AvatarModel
-            url="https://models.readyplayer.me/68c5f4f3c03601654511de22.glb?morphTargets=ARKit,Oculus%20Visemes&textureAtlas=none&lod=1"
+            url={avatarUrl || "https://models.readyplayer.me/68c5f4f3c03601654511de22.glb?morphTargets=ARKit,Oculus%20Visemes&textureAtlas=none&lod=1"}
             isPlaying={isPlaying}
             audioAnalyser={audioAnalyser}
             currentText={currentText}

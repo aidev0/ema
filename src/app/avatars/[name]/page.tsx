@@ -31,7 +31,7 @@ export default function AvatarInteractionPage() {
   const audioChunksRef = useRef<Blob[]>([])
 
   // Enhanced TTS Hook with avatar-specific voice
-  const { speak, stop, isPlaying, audioAnalyser, provider } = useEnhancedTTS(avatar?.name)
+  const { speak, stop, isPlaying, audioAnalyser, provider } = useEnhancedTTS(avatar?.name, avatar?.voice_id)
 
 
   const [greeting, setGreeting] = useState('')
@@ -244,6 +244,7 @@ export default function AvatarInteractionPage() {
           isPlaying={isPlaying}
           audioAnalyser={audioAnalyser}
           currentText={currentAIText}
+          avatarUrl={avatar?.avatar_model}
         />
       </div>
 

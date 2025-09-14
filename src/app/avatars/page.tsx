@@ -7,11 +7,10 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Environment, ContactShadows, Clone, Html } from '@react-three/drei'
 import * as THREE from 'three'
 
-// Same model URL for all avatars
-const AVATAR_MODEL_URL = 'https://models.readyplayer.me/68c5f4f3c03601654511de22.glb?morphTargets=ARKit,Oculus%20Visemes&textureAtlas=none&lod=1'
-
-// Preload the model
-useGLTF.preload(AVATAR_MODEL_URL)
+// Preload all avatar models
+avatarsData.avatars.forEach(avatar => {
+  useGLTF.preload(avatar.avatar_model)
+})
 
 function AvatarModel({
   position,
@@ -22,10 +21,10 @@ function AvatarModel({
   position: [number, number, number]
   onClick: () => void
   modelIndex: number
-  avatarData: { name: string; [key: string]: unknown }
+  avatarData: { name: string; avatar_model: string; [key: string]: unknown }
 }) {
   const meshRef = useRef<THREE.Group>(null)
-  const gltf = useGLTF(AVATAR_MODEL_URL)
+  const gltf = useGLTF(avatarData.avatar_model)
   const [hovered, setHovered] = useState(false)
 
   useFrame((state) => {

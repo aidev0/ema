@@ -58,7 +58,7 @@ function AvatarModel({
       <mesh position={[0, 1, 0]}>
         <sphereGeometry args={[0.1, 16, 16]} />
         <meshBasicMaterial
-          color={avatarData.company_color}
+          color={avatarData.company_color as string}
           transparent
           opacity={hovered ? 0.8 : 0.4}
         />
@@ -69,7 +69,7 @@ function AvatarModel({
         <mesh position={[0, -1.9, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.8, 1.2, 32]} />
           <meshBasicMaterial
-            color={avatarData.company_color}
+            color={avatarData.company_color as string}
             transparent
             opacity={0.6}
           />

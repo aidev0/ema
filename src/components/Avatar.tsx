@@ -251,13 +251,30 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
       morphTargetsRef.current.forEach((mesh) => {
         if (mesh.morphTargetDictionary && mesh.morphTargetInfluences) {
           const allMorphs = Object.keys(mesh.morphTargetDictionary)
-          const mouthMorphs = allMorphs.filter(name =>
-            name.toLowerCase().includes('mouth') ||
-            name.toLowerCase().includes('jaw') ||
-            name.toLowerCase().includes('viseme') ||
-            name.toLowerCase().includes('aa') ||
-            name.toLowerCase().includes('open')
-          )
+          const mouthMorphs = allMorphs.filter(name => {
+            const loweName = name.toLowerCase()
+            return (
+              loweName.includes('viseme') ||
+              loweName.includes('mouth') ||
+              loweName.includes('jaw') ||
+              loweName.includes('aa') ||
+              loweName.includes('oh') ||
+              loweName.includes('ch') ||
+              loweName.includes('ff') ||
+              loweName.includes('ih') ||
+              loweName.includes('kk') ||
+              loweName.includes('nn') ||
+              loweName.includes('pp') ||
+              loweName.includes('rr') ||
+              loweName.includes('sil') ||
+              loweName.includes('ss') ||
+              loweName.includes('th') ||
+              loweName.includes('dd') ||
+              loweName.includes('ee') ||
+              loweName.includes('uu') ||
+              loweName.includes('open')
+            )
+          })
 
           mouthMorphs.forEach(morphName => {
             const morphIndex = mesh.morphTargetDictionary![morphName]
@@ -286,13 +303,33 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
     morphTargetsRef.current.forEach((mesh) => {
       if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return
 
-      // Find mouth-related morph targets but be more selective
+      // Find mouth-related morph targets - more comprehensive search
       const allMorphs = Object.keys(mesh.morphTargetDictionary)
-      const mouthMorphs = allMorphs.filter(name =>
-        name.toLowerCase().includes('visemeaa') ||
-        name.toLowerCase().includes('jawopen') ||
-        name.toLowerCase().includes('mouthopen')
-      )
+      console.log('Available morphs:', allMorphs) // Debug log
+      const mouthMorphs = allMorphs.filter(name => {
+        const loweName = name.toLowerCase()
+        return (
+          loweName.includes('viseme') ||
+          loweName.includes('mouth') ||
+          loweName.includes('jaw') ||
+          loweName.includes('aa') ||
+          loweName.includes('oh') ||
+          loweName.includes('ch') ||
+          loweName.includes('ff') ||
+          loweName.includes('ih') ||
+          loweName.includes('kk') ||
+          loweName.includes('nn') ||
+          loweName.includes('pp') ||
+          loweName.includes('rr') ||
+          loweName.includes('sil') ||
+          loweName.includes('ss') ||
+          loweName.includes('th') ||
+          loweName.includes('dd') ||
+          loweName.includes('ee') ||
+          loweName.includes('uu')
+        )
+      })
+      console.log('Found mouth morphs:', mouthMorphs) // Debug log
 
       mouthMorphs.forEach(morphName => {
         const morphIndex = mesh.morphTargetDictionary![morphName]

@@ -89,42 +89,46 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
       await this.initAudioContext()
     }
 
-    // Get audio and convert to buffer for proper analyser connection
+    // Get audio and use MediaElementSource for HTML Audio with analyser
     const audioBlob = await response.blob()
-    const arrayBuffer = await audioBlob.arrayBuffer()
+    const audioUrl = URL.createObjectURL(audioBlob)
 
-    try {
-      const audioBuffer = await this.audioContext!.decodeAudioData(arrayBuffer)
-      return await this.playAudioBuffer(audioBuffer)
-    } catch (error) {
-      console.error('ElevenLabs: Failed to decode audio, falling back to HTML Audio:', error)
+    return new Promise((resolve, reject) => {
+      this.currentAudio = new Audio(audioUrl)
 
-      // Fallback to HTML Audio (without lip sync)
-      const audioUrl = URL.createObjectURL(audioBlob)
-      return new Promise((resolve, reject) => {
-        this.currentAudio = new Audio(audioUrl)
-
-        this.currentAudio.onplay = () => {
-          this._isPlaying = true
+      // Connect HTML Audio to analyser using MediaElementSource
+      if (this.audioContext && this._audioAnalyser) {
+        try {
+          const source = this.audioContext.createMediaElementSource(this.currentAudio)
+          source.connect(this._audioAnalyser)
+          source.connect(this.audioContext.destination)
+          console.log('ElevenLabs: Connected HTML Audio to analyser')
+        } catch (error) {
+          console.error('ElevenLabs: Failed to connect audio to analyser:', error)
         }
+      }
 
-        this.currentAudio.onended = () => {
-          this._isPlaying = false
-          this.currentAudio = null
-          URL.revokeObjectURL(audioUrl)
-          resolve(undefined)
-        }
+      this.currentAudio.onplay = () => {
+        this._isPlaying = true
+        console.log('ElevenLabs: Audio started playing with analyser:', !!this._audioAnalyser)
+      }
 
-        this.currentAudio.onerror = () => {
-          this._isPlaying = false
-          this.currentAudio = null
-          URL.revokeObjectURL(audioUrl)
-          reject(new Error('Audio playback failed'))
-        }
+      this.currentAudio.onended = () => {
+        this._isPlaying = false
+        this.currentAudio = null
+        URL.revokeObjectURL(audioUrl)
+        resolve(undefined)
+      }
 
-        this.currentAudio.play().catch(reject)
-      })
-    }
+      this.currentAudio.onerror = () => {
+        this._isPlaying = false
+        this.currentAudio = null
+        URL.revokeObjectURL(audioUrl)
+        reject(new Error('Audio playback failed'))
+      }
+
+      this.currentAudio.play().catch(reject)
+    })
   }
 
   private async playAudioBuffer(audioBuffer: AudioBuffer): Promise<void> {

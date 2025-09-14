@@ -6,6 +6,7 @@ import { useGLTF } from '@react-three/drei'
 import { OrbitControls, Environment, ContactShadows, Html, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 import { GESTURES, IDLE_ANIMATIONS, analyzeTextForGestures, easingFunctions, deg2rad } from '@/utils/gestureSystem'
+import { textToVisemes, VisemeData } from '@/utils/visemeMapping'
 
 function Loader() {
   const { progress } = useProgress()
@@ -100,6 +101,10 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
   const [idleAnimations] = useState(() => [...IDLE_ANIMATIONS])
   const [currentIdleIndex, setCurrentIdleIndex] = useState(0)
   const [idleStartTime, setIdleStartTime] = useState<number>(0)
+
+  // Viseme system state for lip sync
+  const [visemeSequence, setVisemeSequence] = useState<VisemeData[]>([])
+  const [speechStartTime, setSpeechStartTime] = useState<number>(0)
 
 
   useEffect(() => {
@@ -246,6 +251,8 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
     }
 
     // Lip sync animation
+    console.log('Lip sync check:', { isPlaying, hasAudioAnalyser: !!audioAnalyser, meshCount: morphTargetsRef.current.length })
+
     if (!isPlaying || !audioAnalyser || morphTargetsRef.current.length === 0) {
       // Reset mouth to neutral when not speaking
       morphTargetsRef.current.forEach((mesh) => {
@@ -298,7 +305,7 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
     audioAnalyser.getByteFrequencyData(dataArray)
 
     const average = dataArray.reduce((a, b) => a + b) / dataArray.length
-    const normalizedValue = Math.min(average / 120, 0.3) // Much more conservative values
+    const normalizedValue = Math.min(average / 255, 0.05) // Very conservative values
 
     morphTargetsRef.current.forEach((mesh) => {
       if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return
@@ -335,8 +342,8 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
         const morphIndex = mesh.morphTargetDictionary![morphName]
         if (morphIndex !== undefined && mesh.morphTargetInfluences) {
           const currentValue = mesh.morphTargetInfluences[morphIndex] || 0
-          const targetValue = normalizedValue * 0.4 // Much smaller multiplier
-          mesh.morphTargetInfluences[morphIndex] = THREE.MathUtils.lerp(currentValue, targetValue, 0.15)
+          const targetValue = normalizedValue * 0.1 // Much much smaller multiplier
+          mesh.morphTargetInfluences[morphIndex] = THREE.MathUtils.lerp(currentValue, targetValue, 0.1)
         }
       })
     })

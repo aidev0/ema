@@ -7,6 +7,7 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
   private _audioAnalyser: AnalyserNode | null = null
   private audioContext: AudioContext | null = null
   private currentAudio: HTMLAudioElement | null = null
+  private currentSource: AudioBufferSourceNode | null = null
 
   constructor(
     private voiceId: string = 'EXAVITQu4vr4xnSDxMaL', // Default Bella voice
@@ -83,33 +84,47 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
       throw new Error(`ElevenLabs API error: ${response.status}`)
     }
 
-    // Get audio and play
+    // Initialize audio context if needed
+    if (!this.audioContext) {
+      await this.initAudioContext()
+    }
+
+    // Get audio and convert to buffer for proper analyser connection
     const audioBlob = await response.blob()
-    const audioUrl = URL.createObjectURL(audioBlob)
+    const arrayBuffer = await audioBlob.arrayBuffer()
 
-    return new Promise((resolve, reject) => {
-      this.currentAudio = new Audio(audioUrl)
+    try {
+      const audioBuffer = await this.audioContext!.decodeAudioData(arrayBuffer)
+      return await this.playAudioBuffer(audioBuffer)
+    } catch (error) {
+      console.error('ElevenLabs: Failed to decode audio, falling back to HTML Audio:', error)
 
-      this.currentAudio.onplay = () => {
-        this._isPlaying = true
-      }
+      // Fallback to HTML Audio (without lip sync)
+      const audioUrl = URL.createObjectURL(audioBlob)
+      return new Promise((resolve, reject) => {
+        this.currentAudio = new Audio(audioUrl)
 
-      this.currentAudio.onended = () => {
-        this._isPlaying = false
-        this.currentAudio = null
-        URL.revokeObjectURL(audioUrl)
-        resolve(undefined)
-      }
+        this.currentAudio.onplay = () => {
+          this._isPlaying = true
+        }
 
-      this.currentAudio.onerror = () => {
-        this._isPlaying = false
-        this.currentAudio = null
-        URL.revokeObjectURL(audioUrl)
-        reject(new Error('Audio playback failed'))
-      }
+        this.currentAudio.onended = () => {
+          this._isPlaying = false
+          this.currentAudio = null
+          URL.revokeObjectURL(audioUrl)
+          resolve(undefined)
+        }
 
-      this.currentAudio.play().catch(reject)
-    })
+        this.currentAudio.onerror = () => {
+          this._isPlaying = false
+          this.currentAudio = null
+          URL.revokeObjectURL(audioUrl)
+          reject(new Error('Audio playback failed'))
+        }
+
+        this.currentAudio.play().catch(reject)
+      })
+    }
   }
 
   private async playAudioBuffer(audioBuffer: AudioBuffer): Promise<void> {
@@ -118,6 +133,7 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
         console.log('ElevenLabs: Playing audio buffer directly')
         const source = this.audioContext!.createBufferSource()
         source.buffer = audioBuffer
+        this.currentSource = source
 
         // Connect to analyser for lip sync
         if (this._audioAnalyser) {
@@ -130,6 +146,7 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
         source.onended = () => {
           console.log('ElevenLabs: Audio buffer playback ended')
           this._isPlaying = false
+          this.currentSource = null
           resolve()
         }
 
@@ -184,6 +201,14 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
       this.currentAudio.pause()
       this.currentAudio.currentTime = 0
       this.currentAudio = null
+    }
+    if (this.currentSource) {
+      try {
+        this.currentSource.stop()
+      } catch (error) {
+        // Source might already be stopped
+      }
+      this.currentSource = null
     }
     this._isPlaying = false
   }

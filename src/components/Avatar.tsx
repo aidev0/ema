@@ -305,7 +305,7 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
     audioAnalyser.getByteFrequencyData(dataArray)
 
     const average = dataArray.reduce((a, b) => a + b) / dataArray.length
-    const normalizedValue = Math.min(average / 255, 0.05) // Very conservative values
+    const normalizedValue = Math.min(average / 180, 0.15) // Balanced values
 
     morphTargetsRef.current.forEach((mesh) => {
       if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return
@@ -342,8 +342,8 @@ function AvatarModel({ url, isPlaying, audioAnalyser, currentText }: AvatarModel
         const morphIndex = mesh.morphTargetDictionary![morphName]
         if (morphIndex !== undefined && mesh.morphTargetInfluences) {
           const currentValue = mesh.morphTargetInfluences[morphIndex] || 0
-          const targetValue = normalizedValue * 0.1 // Much much smaller multiplier
-          mesh.morphTargetInfluences[morphIndex] = THREE.MathUtils.lerp(currentValue, targetValue, 0.1)
+          const targetValue = normalizedValue * 0.25 // Balanced multiplier
+          mesh.morphTargetInfluences[morphIndex] = THREE.MathUtils.lerp(currentValue, targetValue, 0.2)
         }
       })
     })

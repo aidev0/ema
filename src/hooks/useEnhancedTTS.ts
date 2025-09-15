@@ -70,12 +70,25 @@ export function useEnhancedTTS(avatarName?: string, voiceId?: string): EnhancedT
     initializeProvider()
   }, [avatarName, voiceId])
 
-  // Continuously update audioAnalyser during playback
+  // Continuously sync isPlaying state and audioAnalyser with provider
   useEffect(() => {
-    if (isPlaying && voiceProviderRef.current?.audioAnalyser && voiceProviderRef.current.audioAnalyser !== audioAnalyser) {
-      console.log('Updating audioAnalyser during playback')
-      setAudioAnalyser(voiceProviderRef.current.audioAnalyser)
-    }
+    const interval = setInterval(() => {
+      if (voiceProviderRef.current) {
+        const providerIsPlaying = voiceProviderRef.current.isPlaying
+        const providerAnalyser = voiceProviderRef.current.audioAnalyser
+
+        if (providerIsPlaying !== isPlaying) {
+          setIsPlaying(providerIsPlaying)
+        }
+
+        if (providerAnalyser && providerAnalyser !== audioAnalyser) {
+          console.log('Updating audioAnalyser from provider')
+          setAudioAnalyser(providerAnalyser)
+        }
+      }
+    }, 100) // Check every 100ms
+
+    return () => clearInterval(interval)
   }, [isPlaying, audioAnalyser])
 
   // Load Web Speech voices (for fallback and display)
@@ -137,7 +150,6 @@ export function useEnhancedTTS(avatarName?: string, voiceId?: string): EnhancedT
 
     try {
       console.log('speak() - calling provider.speak()', voiceProviderRef.current.constructor.name)
-      setIsPlaying(true)
       await voiceProviderRef.current.speak(text)
 
       // Update audioAnalyser after speak (ElevenLabs creates it during speak)
@@ -149,7 +161,6 @@ export function useEnhancedTTS(avatarName?: string, voiceId?: string): EnhancedT
       console.log('speak() - provider.speak() completed')
     } catch (error) {
       console.error('speak() - provider.speak() failed:', error)
-      setIsPlaying(false)
     }
   }, [])
 

@@ -39,7 +39,7 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
       analyser.smoothingTimeConstant = 0.8
       this._audioAnalyser = analyser
 
-      console.log('ElevenLabs: AudioContext initialized, state:', this.audioContext.state)
+      console.log('ElevenLabs: AudioContext initialized, state:', this.audioContext.state, 'analyser created:', !!this._audioAnalyser)
     } catch (error) {
       console.error('ElevenLabs: Failed to init AudioContext:', error)
     }
@@ -102,10 +102,17 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
           const source = this.audioContext.createMediaElementSource(this.currentAudio)
           source.connect(this._audioAnalyser)
           source.connect(this.audioContext.destination)
-          console.log('ElevenLabs: Connected HTML Audio to analyser')
+          console.log('ElevenLabs: Connected HTML Audio to analyser successfully')
         } catch (error) {
           console.error('ElevenLabs: Failed to connect audio to analyser:', error)
+          console.log('ElevenLabs: AudioContext state:', this.audioContext.state)
+          console.log('ElevenLabs: Analyser exists:', !!this._audioAnalyser)
         }
+      } else {
+        console.log('ElevenLabs: Cannot connect to analyser - missing context or analyser:', {
+          hasContext: !!this.audioContext,
+          hasAnalyser: !!this._audioAnalyser
+        })
       }
 
       this.currentAudio.onplay = () => {

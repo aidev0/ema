@@ -33,6 +33,9 @@ export default function AvatarInteractionPage() {
   // Enhanced TTS Hook with avatar-specific voice
   const { speak, stop, isPlaying, audioAnalyser, provider } = useEnhancedTTS(avatar?.name, avatar?.voice_id)
 
+  // Debug logging
+  console.log('Avatar page state:', { isPlaying, hasAudioAnalyser: !!audioAnalyser, provider })
+
 
   const [greeting, setGreeting] = useState('')
   const hasSpokenRef = useRef(false)
